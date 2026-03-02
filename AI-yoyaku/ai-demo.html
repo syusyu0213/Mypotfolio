@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI電話予約システム - デモ管理画面</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #333;
+      background: #f5f5f5;
+    }
+
+    /* ナビゲーションバー */
+    .nav {
+      background: #2c3e50;
+      color: #fff;
+      padding: 14px 24px;
+      font-weight: 700;
+      font-size: 18px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .nav-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .nav-title {
+      font-size: 20px;
+    }
+    .nav-item {
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+    }
+    .nav-item:hover {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+    .nav-item.active {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+    }
+
+    /* メインコンテンツ */
+    .main {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      min-height: calc(100vh - 60px);
+    }
+    @media (max-width: 1000px) {
+      .main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* パネル共通 */
+    .panel {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-header {
+      padding: 16px 20px;
+      background: #34495e;
+      color: #fff;
+      font-weight: 700;
+      font-size: 17px;
+    }
+    .panel-body {
+      padding: 16px 20px;
+      flex: 1;
+      overflow: auto;
+    }
+
+    /* 左: ライブチャットログ */
+    .chat-log {
+      min-height: 400px;
+      max-height: 70vh;
+    }
+    .chat-entry {
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border-radius: 6px;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    .chat-entry.system {
+      background: #ecf0f1;
+      color: #555;
+      border-left: 4px solid #95a5a6;
+    }
+    .chat-entry.ai {
+      background: #e8f4fd;
+      color: #1a5276;
+      border-left: 4px solid #3498db;
+    }
+    .chat-entry.user {
+      background: #eafaf1;
+      color: #1e8449;
+      border-left: 4px solid #27ae60;
+    }
+    .chat-entry .label {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 4px;
+      opacity: 0.9;
+    }
+    .chat-entry .time {
+      font-size: 13px;
+      opacity: 0.8;
+      margin-top: 6px;
+    }
+
+    /* 右: 予約一覧テーブル */
+    .table-wrap {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 16px;
+    }
+    th, td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    th {
+      background: #f8f9fa;
+      font-weight: 700;
+      color: #2c3e50;
+    }
+    tr:hover {
+      background: #f8f9fa;
+    }
+    tr.new-row {
+      animation: rowAppear 0.5s ease-out;
+    }
+    @keyframes rowAppear {
+      from {
+        opacity: 0;
+        background: #d4edda;
+      }
+      to {
+        opacity: 1;
+        background: transparent;
+      }
+    }
+
+    /* ステータスバッジ */
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .badge-確定 {
+      background: #d4edda;
+      color: #155724;
+    }
+    .badge-確認中 {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .badge-キャンセル {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .badge-新規 {
+      background: #cce5ff;
+      color: #004085;
+    }
+
+    /* ボタン */
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      min-height: 44px;
+      min-width: 100px;
+    }
+    .btn-primary {
+      background: #3498db;
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: #2980b9;
+    }
+    .btn-secondary {
+      background: #95a5a6;
+      color: #fff;
+    }
+    .btn-secondary:hover {
+      background: #7f8c8d;
+    }
+    .panel-actions {
+      padding: 12px 20px;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    /* 通知メール送信トースト */
+    .email-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 14px 24px;
+      background: #2c3e50;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 1000;
+      animation: toastIn 0.3s ease-out;
+    }
+    .email-toast.hide { animation: toastOut 0.3s ease-out forwards; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateX(-50%) translateY(0); }
+      to { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    }
+  </style>
+</head>
+<body>
+  <div id="emailToast" class="email-toast" style="display: none;" aria-live="polite"></div>
+  <nav class="nav">
+    <div class="nav-inner">
+      <span class="nav-title">AI電話予約システム</span>
+      <a href="#" class="nav-item active">ダッシュボード</a>
+      <a href="reservation-calendar.html" class="nav-item">予約一覧</a>
+      <a href="ai-settings.html" class="nav-item">設定</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <!-- 左: AI稼働状況（ライブチャットログ） -->
+    <section class="panel">
+      <header class="panel-header">AIの稼働状況（ライブチャットログ）</header>
+      <div class="panel-body chat-log" id="chatLog">
+        <div class="chat-entry system">
+          <div class="label">システム</div>
+          <div>AI電話予約システムを起動しました。歯科の通話ログを表示します。</div>
+          <div class="time" data-time></div>
+        </div>
+      </div>
+      <div class="panel-actions">
+        <button type="button" class="btn btn-primary" id="btnDemoToggle">デモを開始</button>
+      </div>
+    </section>
+
+    <!-- 右: 予約一覧テーブル -->
+    <section class="panel">
+      <header class="panel-header">予約一覧</header>
+      <div class="panel-body">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>日時</th>
+                <th>お名前</th>
+                <th>電話番号</th>
+                <th>希望日時</th>
+                <th>予約内容（要約）</th>
+                <th>ステータス</th>
+              </tr>
+            </thead>
+            <tbody id="reservationTable">
+              <tr>
+                <td>2025-03-01 10:00</td>
+                <td>山田 太郎様</td>
+                <td>090-1234-5678</td>
+                <td>03/05 14:00</td>
+                <td>虫歯の治療</td>
+                <td><span class="badge badge-確定">確定</span></td>
+              </tr>
+              <tr>
+                <td>2025-03-01 11:30</td>
+                <td>佐藤 花子様</td>
+                <td>080-9876-5432</td>
+                <td>03/06 10:00</td>
+                <td>親知らずの抜歯相談</td>
+                <td><span class="badge badge-確認中">確認中</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const chatLog = document.getElementById('chatLog');
+      const reservationTable = document.getElementById('reservationTable');
+      const btnDemoToggle = document.getElementById('btnDemoToggle');
+
+      // デモ用の対話スクリプト（歯科・1往復で1予約が完了する想定）
+      const scenarios = [
+        {
+          entries: [
+            { type: 'ai', label: 'AI', text: 'お電話ありがとうございます。○○歯科クリニックのAI予約です。ご用件をどうぞ。' },
+            { type: 'user', label: 'お客様', text: '虫歯の治療で予約を取りたいです。' },
+            { type: 'ai', label: 'AI', text: '虫歯の治療ですね。かしこまりました。お名前をフルネームでお願いします。' },
+            { type: 'user', label: 'お客様', text: '鈴木 一郎です。' },
+            { type: 'ai', label: 'AI', text: '鈴木一郎様ですね。ご連絡先の電話番号をお願いします。' },
+            { type: 'user', label: 'お客様', text: '070-1111-2222です。' },
+            { type: 'ai', label: 'AI', text: '070-1111-2222で承りました。ご希望の日時はいつがよろしいですか？' },
+            { type: 'user', label: 'お客様', text: '3月7日の午後2時でお願いします。' },
+            { type: 'ai', label: 'AI', text: '虫歯治療で3月7日 14:00で承りました。この内容で予約を確定してよろしいですか？' },
+            { type: 'user', label: 'お客様', text: 'はい、お願いします。' },
+            { type: 'ai', label: 'AI', text: '予約が完了しました。当日お待ちしております。' },
+            { type: 'system', label: 'システム', text: '通話終了。予約内容を要約して一覧に追加しました。' }
+          ],
+          reservation: { date: '2025-03-01 14:05', name: '鈴木 一郎', tel: '070-1111-2222', hope: '03/07 14:00', summary: '虫歯の治療', status: '確定', statusClass: 'badge-確定' }
+        },
+        {
+          entries: [
+            { type: 'ai', label: 'AI', text: 'お電話ありがとうございます。○○歯科クリニックのAI予約です。' },
+            { type: 'user', label: 'お客様', text: '親知らずを抜いてほしいんです。田中 美咲です。' },
+            { type: 'ai', label: 'AI', text: '親知らずの抜歯ですね。田中美咲様、電話番号をお願いします。' },
+            { type: 'user', label: 'お客様', text: '090-3333-4444です。' },
+            { type: 'ai', label: 'AI', text: 'ご希望の日時はいかがですか？まずは相談・診察のご予約になります。' },
+            { type: 'user', label: 'お客様', text: '3月8日の午前10時がいいです。' },
+            { type: 'ai', label: 'AI', text: '親知らず抜歯の相談で3月8日 10:00で承りました。確認のため折り返しご連絡します。' },
+            { type: 'system', label: 'システム', text: '通話終了。予約内容を要約して一覧に追加しました。' }
+          ],
+          reservation: { date: '2025-03-01 14:12', name: '田中 美咲', tel: '090-3333-4444', hope: '03/08 10:00', summary: '親知らずの抜歯相談', status: '確認中', statusClass: 'badge-確認中' }
+        },
+        {
+          entries: [
+            { type: 'ai', label: 'AI', text: 'お電話ありがとうございます。○○歯科クリニックのAI予約です。' },
+            { type: 'user', label: 'お客様', text: '歯が痛いので見てほしいです。高橋 健太です。' },
+            { type: 'ai', label: 'AI', text: '歯の痛みのご相談ですね。高橋健太様、ご連絡先の電話番号をお願いします。' },
+            { type: 'user', label: 'お客様', text: '080-5555-6666です。' },
+            { type: 'ai', label: 'AI', text: '明日は3月2日ですね。何時頃がよろしいですか？' },
+            { type: 'user', label: 'お客様', text: '午後3時でお願いします。' },
+            { type: 'ai', label: 'AI', text: '歯の痛みの診察で3月2日 15:00で予約を確定しました。お早めにご来院ください。' },
+            { type: 'system', label: 'システム', text: '通話終了。予約内容を要約して一覧に追加しました。' }
+          ],
+          reservation: { date: '2025-03-01 14:18', name: '高橋 健太', tel: '080-5555-6666', hope: '03/02 15:00', summary: '歯の痛み（診察）', status: '確定', statusClass: 'badge-確定' }
+        }
+      ];
+
+      let scenarioIndex = 0;
+      let entryIndex = 0;
+      let timerId = null;
+      let isPaused = false;
+
+      function nowStr() {
+        const d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + ' ' +
+          String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ':' + String(d.getSeconds()).padStart(2, '0');
+      }
+
+      function addChatEntry(entry) {
+        const div = document.createElement('div');
+        div.className = 'chat-entry ' + entry.type;
+        div.innerHTML = '<div class="label">' + entry.label + '</div><div>' + escapeHtml(entry.text) + '</div><div class="time">' + nowStr() + '</div>';
+        chatLog.appendChild(div);
+        chatLog.scrollTop = chatLog.scrollHeight;
+      }
+
+      function escapeHtml(s) {
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+      }
+
+      function getNotifySettings() {
+        try {
+          const raw = localStorage.getItem('ai-reservation-settings');
+          if (!raw) return null;
+          const data = JSON.parse(raw);
+          return {
+            emailNotify: !!data.emailNotify,
+            notifyEmail: (data.notifyEmail || '').trim()
+          };
+        } catch (e) { return null; }
+      }
+
+      function showEmailSentToast(email) {
+        const toast = document.getElementById('emailToast');
+        if (!toast) return;
+        toast.textContent = email ? email + ' に通知メールを送信しました（デモ）' : '通知メールを送信しました（デモ）';
+        toast.style.display = 'block';
+        toast.classList.remove('hide');
+        clearTimeout(toast._hideId);
+        toast._hideId = setTimeout(function () {
+          toast.classList.add('hide');
+          setTimeout(function () { toast.style.display = 'none'; }, 300);
+        }, 4500);
+      }
+
+      function addReservationRow(data, withAnimation) {
+        const tr = document.createElement('tr');
+        if (withAnimation) tr.classList.add('new-row');
+        tr.innerHTML = '<td>' + data.date + '</td><td>' + escapeHtml(data.name) + '様</td><td>' + escapeHtml(data.tel) + '</td><td>' + escapeHtml(data.hope) + '</td><td>' + escapeHtml(data.summary || '—') + '</td><td><span class="badge ' + data.statusClass + '">' + escapeHtml(data.status) + '</span></td>';
+        reservationTable.insertBefore(tr, reservationTable.firstChild);
+        if (withAnimation) {
+          const hopeParts = (data.hope || '').trim().split(/\s+/);
+          const datePart = hopeParts[0] || '';
+          const timePart = hopeParts[1] || '10:00';
+          const monDay = datePart.split('/').map(Number);
+          const year = new Date().getFullYear();
+          const calDate = monDay.length >= 2
+            ? year + '-' + String(monDay[0]).padStart(2, '0') + '-' + String(monDay[1]).padStart(2, '0')
+            : year + '-01-01';
+          const calendarItem = {
+            name: data.name,
+            tel: data.tel,
+            date: calDate,
+            time: timePart,
+            summary: data.summary || '—',
+            status: data.status,
+            statusClass: data.statusClass
+          };
+          try {
+            const raw = localStorage.getItem('ai-reservation-list');
+            const list = raw ? JSON.parse(raw) : [];
+            if (!Array.isArray(list)) list = [];
+            list.push(calendarItem);
+            localStorage.setItem('ai-reservation-list', JSON.stringify(list));
+          } catch (e) {}
+          const settings = getNotifySettings();
+          if (settings && settings.emailNotify && settings.notifyEmail) {
+            showEmailSentToast(settings.notifyEmail);
+          }
+        }
+      }
+
+      function runNextEntry() {
+        if (isPaused) return;
+        const scenario = scenarios[scenarioIndex];
+        if (!scenario) {
+          scenarioIndex = 0;
+          runNextEntry();
+          return;
+        }
+        const entry = scenario.entries[entryIndex];
+        if (!entry) {
+          addReservationRow(scenario.reservation, true);
+          entryIndex = 0;
+          scenarioIndex++;
+          timerId = setTimeout(runNextEntry, 2500);
+          return;
+        }
+        addChatEntry(entry);
+        entryIndex++;
+        const delay = entry.type === 'system' ? 1500 : 1200;
+        timerId = setTimeout(runNextEntry, delay);
+      }
+
+      function startDemo() {
+        isPaused = false;
+        if (timerId) clearTimeout(timerId);
+        scenarioIndex = 0;
+        entryIndex = 0;
+        const systemEntries = chatLog.querySelectorAll('.chat-entry');
+        for (let i = 1; i < systemEntries.length; i++) systemEntries[i].remove();
+        btnDemoToggle.textContent = '一時停止';
+        runNextEntry();
+      }
+
+      function pauseDemo() {
+        isPaused = true;
+        if (timerId) {
+          clearTimeout(timerId);
+          timerId = null;
+        }
+        btnDemoToggle.textContent = 'デモを開始';
+      }
+
+      btnDemoToggle.addEventListener('click', function () {
+        if (isPaused) startDemo();
+        else pauseDemo();
+      });
+
+      // 初回は少し遅らせて開始
+      setTimeout(startDemo, 800);
+    })();
+  </script>
+</body>
+</html>

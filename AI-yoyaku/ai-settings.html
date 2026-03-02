@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>設定 - AI電話予約システム</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #333;
+      background: #f5f5f5;
+    }
+
+    .nav {
+      background: #2c3e50;
+      color: #fff;
+      padding: 14px 24px;
+      font-weight: 700;
+      font-size: 18px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .nav-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .nav-title { font-size: 20px; }
+    .nav-item {
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .nav-item.active { background: rgba(255,255,255,0.2); color: #fff; }
+
+    .main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .panel {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .panel-header {
+      padding: 16px 20px;
+      background: #34495e;
+      color: #fff;
+      font-weight: 700;
+      font-size: 17px;
+    }
+    .panel-body { padding: 20px; }
+    .panel-desc {
+      color: #555;
+      font-size: 15px;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    /* AIオンオフ */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 16px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .toggle-row:last-of-type { border-bottom: none; }
+    .toggle-label {
+      font-size: 17px;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+    .toggle-switch {
+      position: relative;
+      width: 56px;
+      height: 30px;
+      background: #bdc3c7;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-switch.on { background: #27ae60; }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #fff;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .toggle-switch.on::after { transform: translateX(26px); }
+    .toggle-status {
+      font-size: 15px;
+      color: #7f8c8d;
+      margin-top: 4px;
+    }
+    .toggle-status.on { color: #27ae60; font-weight: 600; }
+
+    /* スケジュール */
+    .schedule-list { margin-bottom: 16px; }
+    .schedule-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .schedule-item .time-from,
+    .schedule-item .time-to {
+      padding: 12px 14px;
+      font-size: 16px;
+      border: 1px solid #bdc3c7;
+      border-radius: 6px;
+      min-height: 44px;
+    }
+    .schedule-item .time-sep {
+      font-weight: 700;
+      color: #7f8c8d;
+    }
+    .schedule-item .btn-remove {
+      padding: 10px 16px;
+      font-size: 15px;
+      border: none;
+      border-radius: 6px;
+      background: #e74c3c;
+      color: #fff;
+      cursor: pointer;
+      min-height: 44px;
+    }
+    .schedule-item .btn-remove:hover { background: #c0392b; }
+    .btn-add {
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      border: 2px dashed #95a5a6;
+      border-radius: 6px;
+      background: #fff;
+      color: #3498db;
+      cursor: pointer;
+      min-height: 44px;
+    }
+    .btn-add:hover { background: #ecf0f1; }
+    .schedule-note {
+      font-size: 14px;
+      color: #7f8c8d;
+      margin-top: 12px;
+    }
+
+    /* 予約通知メール */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 15px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 8px;
+    }
+    .form-group input[type="email"] {
+      width: 100%;
+      max-width: 360px;
+      padding: 12px 14px;
+      font-size: 16px;
+      border: 1px solid #bdc3c7;
+      border-radius: 6px;
+      min-height: 44px;
+    }
+
+    /* 保存 */
+    .form-actions {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn-save {
+      padding: 14px 28px;
+      font-size: 17px;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      background: #3498db;
+      color: #fff;
+      cursor: pointer;
+      min-height: 48px;
+    }
+    .btn-save:hover { background: #2980b9; }
+    .btn-cancel {
+      padding: 14px 28px;
+      font-size: 17px;
+      font-weight: 600;
+      border: 2px solid #bdc3c7;
+      border-radius: 6px;
+      background: #fff;
+      color: #555;
+      cursor: pointer;
+      min-height: 48px;
+    }
+    .btn-cancel:hover { background: #f8f9fa; }
+    .save-message {
+      margin-top: 12px;
+      font-size: 15px;
+      color: #27ae60;
+      font-weight: 600;
+    }
+    .save-message.hidden { display: none; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <span class="nav-title">AI電話予約システム</span>
+      <a href="ai-demo.html" class="nav-item">ダッシュボード</a>
+      <a href="reservation-calendar.html" class="nav-item">予約一覧</a>
+      <a href="ai-settings.html" class="nav-item active">設定</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <section class="panel">
+      <header class="panel-header">AI予約システム</header>
+      <div class="panel-body">
+        <p class="panel-desc">
+          営業時間外のみAIで受け付けたい場合は、このスイッチでAIをオフにし、スケジュールで「この時間からこの時間まで」だけAIを有効にすることができます。
+        </p>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">AI予約を有効にする</div>
+            <div class="toggle-status" id="toggleStatus">オフ（手動・有人対応時はオフにしてください）</div>
+          </div>
+          <div class="toggle-switch" id="toggleSwitch" role="button" tabindex="0" aria-pressed="false"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <header class="panel-header">予約通知メール</header>
+      <div class="panel-body">
+        <p class="panel-desc">
+          予約が入ったときに、指定したメールアドレスへ通知メールを送信します。複数アドレスには対応していません。デモでは実際の送信は行わず、送信した扱いで画面に表示されます。
+        </p>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">予約が入ったときにメールで通知する</div>
+            <div class="toggle-status" id="emailNotifyStatus">オフ</div>
+          </div>
+          <div class="toggle-switch" id="emailNotifySwitch" role="button" tabindex="0" aria-pressed="false"></div>
+        </div>
+        <div class="form-group" id="emailFormGroup">
+          <label for="notifyEmail">通知先メールアドレス</label>
+          <input type="email" id="notifyEmail" placeholder="example@example.com" autocomplete="email">
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <header class="panel-header">AI稼働スケジュール</header>
+      <div class="panel-body">
+        <p class="panel-desc">
+          次の時間帯は、電話がかかってきたときに自動でAIが予約を受け付けます。営業時間外（例：18:00～翌9:00）に設定することをおすすめします。終了時刻が開始時刻より前の場合は「翌日まで」として扱います。
+        </p>
+        <div class="schedule-list" id="scheduleList"></div>
+        <button type="button" class="btn-add" id="btnAddSchedule">＋ スケジュールを追加</button>
+        <p class="schedule-note">例：18:00 ～ 09:00 と設定すると、18:00から翌朝9:00までAIが稼働します。</p>
+
+        <div class="form-actions">
+          <button type="button" class="btn-save" id="btnSave">設定を保存</button>
+          <button type="button" class="btn-cancel" id="btnCancel">キャンセル</button>
+          <span class="save-message hidden" id="saveMessage">保存しました</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = 'ai-reservation-settings';
+      const defaultSettings = {
+        aiEnabled: false,
+        emailNotify: false,
+        notifyEmail: '',
+        schedules: [
+          { start: '18:00', end: '09:00' }
+        ]
+      };
+
+      const toggleSwitch = document.getElementById('toggleSwitch');
+      const toggleStatus = document.getElementById('toggleStatus');
+      const scheduleList = document.getElementById('scheduleList');
+      const btnAddSchedule = document.getElementById('btnAddSchedule');
+      const btnSave = document.getElementById('btnSave');
+      const btnCancel = document.getElementById('btnCancel');
+      const saveMessage = document.getElementById('saveMessage');
+      const emailNotifySwitch = document.getElementById('emailNotifySwitch');
+      const emailNotifyStatus = document.getElementById('emailNotifyStatus');
+      const notifyEmailInput = document.getElementById('notifyEmail');
+
+      function loadSettings() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const data = JSON.parse(raw);
+            return {
+              aiEnabled: !!data.aiEnabled,
+              emailNotify: !!data.emailNotify,
+              notifyEmail: (data.notifyEmail || '').trim(),
+              schedules: Array.isArray(data.schedules) && data.schedules.length > 0
+                ? data.schedules.map(function (s) {
+                    return { start: s.start || '18:00', end: s.end || '09:00' };
+                  })
+                : defaultSettings.schedules
+            };
+          }
+        } catch (e) {}
+        return { ...defaultSettings };
+      }
+
+      function saveSettings(settings) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+      }
+
+      let current = loadSettings();
+
+      function renderEmailNotify() {
+        if (current.emailNotify) {
+          emailNotifySwitch.classList.add('on');
+          emailNotifySwitch.setAttribute('aria-pressed', 'true');
+          emailNotifyStatus.textContent = 'オン（予約入り次第、通知メールを送信します）';
+          emailNotifyStatus.classList.add('on');
+        } else {
+          emailNotifySwitch.classList.remove('on');
+          emailNotifySwitch.setAttribute('aria-pressed', 'false');
+          emailNotifyStatus.textContent = 'オフ';
+          emailNotifyStatus.classList.remove('on');
+        }
+        notifyEmailInput.value = current.notifyEmail || '';
+      }
+
+      function renderToggle() {
+        if (current.aiEnabled) {
+          toggleSwitch.classList.add('on');
+          toggleSwitch.setAttribute('aria-pressed', 'true');
+          toggleStatus.textContent = 'オン（設定した時間帯でAIが自動対応します）';
+          toggleStatus.classList.add('on');
+        } else {
+          toggleSwitch.classList.remove('on');
+          toggleSwitch.setAttribute('aria-pressed', 'false');
+          toggleStatus.textContent = 'オフ（手動・有人対応時はオフにしてください）';
+          toggleStatus.classList.remove('on');
+        }
+      }
+
+      function renderSchedules() {
+        scheduleList.innerHTML = '';
+        current.schedules.forEach(function (s, i) {
+          const item = document.createElement('div');
+          item.className = 'schedule-item';
+          item.innerHTML =
+            '<input type="time" class="time-from" value="' + (s.start || '18:00') + '" data-index="' + i + '" data-type="start">' +
+            '<span class="time-sep">～</span>' +
+            '<input type="time" class="time-to" value="' + (s.end || '09:00') + '" data-index="' + i + '" data-type="end">' +
+            '<button type="button" class="btn-remove" data-index="' + i + '">削除</button>';
+          scheduleList.appendChild(item);
+        });
+
+        scheduleList.querySelectorAll('.time-from, .time-to').forEach(function (input) {
+          input.addEventListener('change', function () {
+            const i = parseInt(this.dataset.index, 10);
+            const type = this.dataset.type;
+            if (current.schedules[i]) current.schedules[i][type] = this.value;
+          });
+        });
+        scheduleList.querySelectorAll('.btn-remove').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            const i = parseInt(this.dataset.index, 10);
+            if (current.schedules.length <= 1) return;
+            current.schedules.splice(i, 1);
+            renderSchedules();
+          });
+        });
+      }
+
+      function collectForm() {
+        current.emailNotify = emailNotifySwitch.classList.contains('on');
+        current.notifyEmail = (notifyEmailInput.value || '').trim();
+        const fromInputs = scheduleList.querySelectorAll('.time-from');
+        const toInputs = scheduleList.querySelectorAll('.time-to');
+        current.schedules = [];
+        fromInputs.forEach(function (input, i) {
+          current.schedules.push({
+            start: input.value || '18:00',
+            end: toInputs[i] ? toInputs[i].value : '09:00'
+          });
+        });
+      }
+
+      toggleSwitch.addEventListener('click', function () {
+        current.aiEnabled = !current.aiEnabled;
+        renderToggle();
+      });
+      toggleSwitch.addEventListener('keydown', function (e) {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          current.aiEnabled = !current.aiEnabled;
+          renderToggle();
+        }
+      });
+
+      emailNotifySwitch.addEventListener('click', function () {
+        current.emailNotify = !current.emailNotify;
+        renderEmailNotify();
+      });
+      emailNotifySwitch.addEventListener('keydown', function (e) {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          current.emailNotify = !current.emailNotify;
+          renderEmailNotify();
+        }
+      });
+      notifyEmailInput.addEventListener('input', function () {
+        current.notifyEmail = this.value.trim();
+      });
+
+      btnAddSchedule.addEventListener('click', function () {
+        current.schedules.push({ start: '18:00', end: '09:00' });
+        renderSchedules();
+      });
+
+      btnSave.addEventListener('click', function () {
+        collectForm();
+        saveSettings(current);
+        saveMessage.classList.remove('hidden');
+        saveMessage.textContent = '保存しました';
+        setTimeout(function () { saveMessage.classList.add('hidden'); }, 3000);
+      });
+
+      btnCancel.addEventListener('click', function () {
+        current = loadSettings();
+        renderToggle();
+        renderEmailNotify();
+        renderSchedules();
+        saveMessage.classList.add('hidden');
+      });
+
+      renderToggle();
+      renderEmailNotify();
+      renderSchedules();
+    })();
+  </script>
+</body>
+</html>

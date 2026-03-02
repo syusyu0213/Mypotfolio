@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>予約一覧 - AI電話予約システム</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #333;
+      background: #f5f5f5;
+    }
+
+    .nav {
+      background: #2c3e50;
+      color: #fff;
+      padding: 14px 24px;
+      font-weight: 700;
+      font-size: 18px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .nav-title { font-size: 20px; }
+    .nav-item {
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .nav-item.active { background: rgba(255,255,255,0.2); color: #fff; }
+
+    .main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .panel {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .panel-header {
+      padding: 16px 20px;
+      background: #34495e;
+      color: #fff;
+      font-weight: 700;
+      font-size: 17px;
+    }
+    .panel-body { padding: 20px; }
+
+    /* カレンダー */
+    .calendar-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .calendar-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #2c3e50;
+    }
+    .calendar-nav {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn {
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      min-height: 44px;
+      background: #3498db;
+      color: #fff;
+    }
+    .btn:hover { background: #2980b9; }
+    .btn-outline {
+      background: transparent;
+      color: #2c3e50;
+      border: 2px solid #bdc3c7;
+    }
+    .btn-outline:hover { background: #ecf0f1; }
+    .btn-add-reservation { background: #27ae60; }
+    .btn-add-reservation:hover { background: #219a52; }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+    .calendar-weekday {
+      padding: 10px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: #7f8c8d;
+      background: #ecf0f1;
+    }
+    .calendar-day {
+      padding: 12px;
+      min-height: 52px;
+      text-align: center;
+      font-size: 16px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      cursor: pointer;
+      position: relative;
+    }
+    .calendar-day:hover { background: #f8f9fa; }
+    .calendar-day.other-month { color: #bdc3c7; background: #fafafa; }
+    .calendar-day.today {
+      border-color: #3498db;
+      background: #ebf5fb;
+      font-weight: 700;
+    }
+    .calendar-day.has-reservation {
+      background: #e8f6f3;
+      border-color: #1abc9c;
+    }
+    .calendar-day .day-num { display: block; font-size: 16px; }
+    .calendar-day .reservation-count {
+      display: block;
+      margin-top: 4px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #0d4d26;
+      line-height: 1.2;
+    }
+    .calendar-day.selected .reservation-count { color: #fff; }
+    .calendar-day.selected {
+      background: #3498db;
+      color: #fff;
+      border-color: #2980b9;
+    }
+
+    /* タイムテーブル */
+    .timetable-empty {
+      padding: 24px;
+      text-align: center;
+      color: #7f8c8d;
+      font-size: 16px;
+    }
+    .timetable-date {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: #2c3e50;
+    }
+    .timetable-list {
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .timetable-row {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      min-height: 52px;
+      border-bottom: 1px solid #e0e0e0;
+      align-items: center;
+    }
+    .timetable-row:last-child { border-bottom: none; }
+    .timetable-time {
+      padding: 12px 16px;
+      font-weight: 600;
+      color: #555;
+      background: #f8f9fa;
+      font-size: 16px;
+    }
+    .timetable-slot {
+      padding: 12px 16px;
+      font-size: 16px;
+    }
+    .timetable-slot.free { color: #95a5a6; }
+    .timetable-slot.busy {
+      background: #fff;
+      border-left: 4px solid #3498db;
+    }
+    .slot-name { font-weight: 700; margin-bottom: 4px; }
+    .slot-meta { font-size: 14px; color: #666; }
+    .slot-summary { font-size: 14px; color: #1a5276; margin-top: 4px; padding: 4px 8px; background: #e8f4fd; border-radius: 4px; display: inline-block; }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+    .badge-確定 { background: #d4edda; color: #155724; }
+    .badge-確認中 { background: #fff3cd; color: #856404; }
+    .badge-キャンセル { background: #f8d7da; color: #721c24; }
+
+    /* モバイル専用ビュー（768px以下で表示） */
+    .mobile-view { display: none; }
+    .mobile-view .mobile-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 16px;
+    }
+    .mobile-view .mobile-filter {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .mobile-view .mobile-filter label {
+      font-size: 15px;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+    .mobile-view .mobile-filter-date {
+      flex: 1;
+      min-width: 140px;
+      padding: 12px 14px;
+      font-size: 16px;
+      border: 1px solid #bdc3c7;
+      border-radius: 6px;
+      min-height: 44px;
+    }
+    .mobile-view .mobile-filter-clear {
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      border: 2px solid #bdc3c7;
+      border-radius: 6px;
+      background: #fff;
+      color: #555;
+      cursor: pointer;
+      min-height: 44px;
+    }
+    .mobile-view .mobile-filter-clear:hover { background: #f8f9fa; }
+    .mobile-view .mobile-list { display: flex; flex-direction: column; gap: 12px; }
+    .mobile-view .mobile-list-item {
+      padding: 16px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .mobile-view .mobile-list-item .item-date {
+      font-size: 14px;
+      color: #7f8c8d;
+      margin-bottom: 4px;
+    }
+    .mobile-view .mobile-list-item .item-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 6px;
+    }
+    .mobile-view .mobile-list-item .item-meta {
+      font-size: 15px;
+      color: #555;
+      margin-bottom: 4px;
+    }
+    .mobile-view .mobile-list-item .item-summary {
+      font-size: 14px;
+      color: #1a5276;
+      background: #e8f4fd;
+      padding: 6px 10px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 8px;
+    }
+    .mobile-view .mobile-list-item .badge { margin-top: 8px; }
+    .mobile-view .mobile-list-empty {
+      text-align: center;
+      padding: 32px 16px;
+      color: #7f8c8d;
+      font-size: 16px;
+    }
+    @media (max-width: 768px) {
+      .calendar-panel,
+      .timetable-panel { display: none !important; }
+      .mobile-view { display: block !important; }
+    }
+    @media (min-width: 769px) {
+      .mobile-view { display: none !important; }
+    }
+
+    /* 予約追加モーダル */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      max-width: 440px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      padding: 16px 20px;
+      background: #34495e;
+      color: #fff;
+      font-weight: 700;
+      font-size: 17px;
+      border-radius: 8px 8px 0 0;
+    }
+    .modal-body { padding: 20px; }
+    .modal .form-group {
+      margin-bottom: 16px;
+    }
+    .modal .form-group label {
+      display: block;
+      font-size: 15px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 6px;
+    }
+    .modal .form-group input,
+    .modal .form-group select {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 16px;
+      border: 1px solid #bdc3c7;
+      border-radius: 6px;
+      min-height: 44px;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    .modal-actions .btn { flex: 1; min-width: 120px; }
+    .modal-actions .btn-cancel {
+      background: #95a5a6;
+    }
+    .modal-actions .btn-cancel:hover { background: #7f8c8d; }
+  </style>
+</head>
+<body>
+  <div id="addReservationModal" class="modal-overlay hidden" aria-hidden="true">
+    <div class="modal" role="dialog" aria-labelledby="modalTitle">
+      <header class="modal-header" id="modalTitle">予約を追加</header>
+      <div class="modal-body">
+        <form id="addReservationForm">
+          <div class="form-group">
+            <label for="addName">お名前 <span class="required">*</span></label>
+            <input type="text" id="addName" required placeholder="例：山田 太郎" autocomplete="name">
+          </div>
+          <div class="form-group">
+            <label for="addTel">電話番号 <span class="required">*</span></label>
+            <input type="tel" id="addTel" required placeholder="例：090-1234-5678">
+          </div>
+          <div class="form-group">
+            <label for="addDate">希望日 <span class="required">*</span></label>
+            <input type="date" id="addDate" required>
+          </div>
+          <div class="form-group">
+            <label for="addTime">希望時間 <span class="required">*</span></label>
+            <input type="time" id="addTime" required value="10:00">
+          </div>
+          <div class="form-group">
+            <label for="addSummary">予約内容（要約）</label>
+            <input type="text" id="addSummary" placeholder="例：虫歯の治療、親知らずの抜歯相談">
+          </div>
+          <div class="form-group">
+            <label for="addStatus">ステータス</label>
+            <select id="addStatus">
+              <option value="確定">確定</option>
+              <option value="確認中">確認中</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="submit" class="btn">追加する</button>
+            <button type="button" class="btn btn-cancel" id="btnCloseModal">キャンセル</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <span class="nav-title">AI電話予約システム</span>
+      <a href="ai-demo.html" class="nav-item">ダッシュボード</a>
+      <a href="reservation-calendar.html" class="nav-item active">予約一覧</a>
+      <a href="ai-settings.html" class="nav-item">設定</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    <section class="panel calendar-panel">
+      <header class="panel-header">予約カレンダー</header>
+      <div class="panel-body">
+        <div class="calendar-toolbar">
+          <span class="calendar-title" id="calendarTitle">2025年3月</span>
+          <div class="calendar-nav">
+            <button type="button" class="btn btn-add-reservation" id="btnAddReservation">＋ 予約を追加</button>
+            <button type="button" class="btn btn-outline" id="btnPrev">前月</button>
+            <button type="button" class="btn btn-outline" id="btnToday">今月</button>
+            <button type="button" class="btn btn-outline" id="btnNext">翌月</button>
+          </div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid">
+          <!-- 曜日ヘッダー -->
+          <div class="calendar-weekday">日</div>
+          <div class="calendar-weekday">月</div>
+          <div class="calendar-weekday">火</div>
+          <div class="calendar-weekday">水</div>
+          <div class="calendar-weekday">木</div>
+          <div class="calendar-weekday">金</div>
+          <div class="calendar-weekday">土</div>
+          <!-- 日付はJSで生成 -->
+        </div>
+      </div>
+    </section>
+
+    <section class="panel mobile-view" id="mobileViewPanel">
+      <header class="panel-header">予約一覧</header>
+      <div class="panel-body">
+        <div class="mobile-toolbar">
+          <button type="button" class="btn btn-add-reservation" id="btnAddReservationMobile">＋ 予約を追加</button>
+        </div>
+        <div class="mobile-filter">
+          <label for="mobileFilterDate">日付で絞り込み</label>
+          <input type="date" id="mobileFilterDate" class="mobile-filter-date" aria-label="表示する日付を選択">
+          <button type="button" class="mobile-filter-clear" id="mobileFilterClear">すべて表示</button>
+        </div>
+        <div class="mobile-list" id="mobileList"></div>
+      </div>
+    </section>
+
+    <section class="panel timetable-panel" id="timetablePanel">
+      <header class="panel-header" id="timetablePanelHeader">日付を選ぶとタイムテーブルを表示します</header>
+      <div class="panel-body">
+        <div class="timetable-empty" id="timetableEmpty">
+          カレンダーで日付をタップすると、その日の予約一覧が表示されます。
+        </div>
+        <div id="timetableContent" style="display: none;">
+          <div class="timetable-date" id="timetableDate"></div>
+          <div class="timetable-list" id="timetableList"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = 'ai-reservation-list';
+      const defaultReservations = [
+        { name: '山田 太郎', tel: '090-1234-5678', date: '2025-03-05', time: '14:00', summary: '虫歯の治療', status: '確定', statusClass: 'badge-確定' },
+        { name: '佐藤 花子', tel: '080-9876-5432', date: '2025-03-06', time: '10:00', summary: '親知らずの抜歯相談', status: '確認中', statusClass: 'badge-確認中' },
+        { name: '鈴木 一郎', tel: '070-1111-2222', date: '2025-03-07', time: '14:00', summary: '虫歯の治療', status: '確定', statusClass: 'badge-確定' },
+        { name: '田中 美咲', tel: '090-3333-4444', date: '2025-03-08', time: '10:00', summary: '親知らずの抜歯相談', status: '確認中', statusClass: 'badge-確認中' },
+        { name: '高橋 健太', tel: '080-5555-6666', date: '2025-03-02', time: '15:00', summary: '歯の痛み（診察）', status: '確定', statusClass: 'badge-確定' },
+        { name: '伊藤 恵子', tel: '090-7777-8888', date: '2025-03-03', time: '11:00', summary: '定期検診', status: '確定', statusClass: 'badge-確定' },
+        { name: '渡辺 誠', tel: '080-9999-0000', date: '2025-03-10', time: '09:30', summary: '歯石除去', status: '確認中', statusClass: 'badge-確認中' },
+        { name: '中村 陽子', tel: '070-2222-3333', date: '2025-03-05', time: '10:00', summary: '虫歯の治療', status: '確定', statusClass: 'badge-確定' }
+      ];
+
+      function loadReservations() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const data = JSON.parse(raw);
+            if (Array.isArray(data) && data.length > 0) return data;
+          }
+        } catch (e) {}
+        return defaultReservations.slice();
+      }
+
+      function saveReservations() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(reservations));
+      }
+
+      let reservations = loadReservations();
+
+      const calendarGrid = document.getElementById('calendarGrid');
+      const calendarTitle = document.getElementById('calendarTitle');
+      const btnPrev = document.getElementById('btnPrev');
+      const btnNext = document.getElementById('btnNext');
+      const btnToday = document.getElementById('btnToday');
+      const timetableEmpty = document.getElementById('timetableEmpty');
+      const timetableContent = document.getElementById('timetableContent');
+      const timetableDate = document.getElementById('timetableDate');
+      const timetableList = document.getElementById('timetableList');
+      const timetablePanelHeader = document.getElementById('timetablePanelHeader');
+      const addReservationModal = document.getElementById('addReservationModal');
+      const addReservationForm = document.getElementById('addReservationForm');
+      const addTelInput = document.getElementById('addTel');
+      const btnAddReservation = document.getElementById('btnAddReservation');
+      const btnAddReservationMobile = document.getElementById('btnAddReservationMobile');
+      const btnCloseModal = document.getElementById('btnCloseModal');
+      const mobileList = document.getElementById('mobileList');
+      const mobileFilterDate = document.getElementById('mobileFilterDate');
+      const mobileFilterClear = document.getElementById('mobileFilterClear');
+
+      function renderMobileList() {
+        const filterDate = mobileFilterDate && mobileFilterDate.value ? mobileFilterDate.value.trim() : '';
+        let list = reservations.slice();
+        if (filterDate) {
+          list = list.filter(function (r) { return r.date === filterDate; });
+        }
+        const sorted = list.sort(function (a, b) {
+          const da = a.date + ' ' + (a.time || '00:00');
+          const db = b.date + ' ' + (b.time || '00:00');
+          return da.localeCompare(db);
+        });
+        if (sorted.length === 0) {
+          if (filterDate) {
+            mobileList.innerHTML = '<div class="mobile-list-empty">この日付の予約はありません。別の日付を選ぶか「すべて表示」で一覧に戻してください。</div>';
+          } else {
+            mobileList.innerHTML = '<div class="mobile-list-empty">予約はありません。「＋ 予約を追加」から登録できます。</div>';
+          }
+          return;
+        }
+        let html = '';
+        sorted.forEach(function (r) {
+          const parts = (r.date || '').split('-');
+          const dateStr = parts.length >= 3 ? parts[0] + '年' + parseInt(parts[1], 10) + '月' + parseInt(parts[2], 10) + '日' : r.date;
+          const timeStr = r.time || '—';
+          html += '<div class="mobile-list-item">';
+          html += '<div class="item-date">' + escapeHtml(dateStr) + ' ' + escapeHtml(timeStr) + '</div>';
+          html += '<div class="item-name">' + escapeHtml(r.name) + '様</div>';
+          html += '<div class="item-meta">' + escapeHtml(r.tel) + '</div>';
+          if (r.summary) html += '<div class="item-summary">' + escapeHtml(r.summary) + '</div>';
+          html += '<span class="badge ' + (r.statusClass || 'badge-確定') + '">' + escapeHtml(r.status || '確定') + '</span>';
+          html += '</div>';
+        });
+        mobileList.innerHTML = html;
+      }
+
+      if (mobileFilterDate) {
+        mobileFilterDate.addEventListener('change', renderMobileList);
+        mobileFilterDate.addEventListener('input', renderMobileList);
+      }
+      if (mobileFilterClear) {
+        mobileFilterClear.addEventListener('click', function () {
+          if (mobileFilterDate) mobileFilterDate.value = '';
+          renderMobileList();
+        });
+      }
+
+      addTelInput.addEventListener('input', function () {
+        this.value = formatPhoneInput(this.value);
+      });
+
+      let currentYear = 2025;
+      let currentMonth = 2; // 0-indexed
+      let selectedDate = null;
+
+      const weekdays = ['日','月','火','水','木','金','土'];
+
+      function formatPhoneInput(value) {
+        const digits = (value || '').replace(/\D/g, '').slice(0, 11);
+        if (digits.length <= 3) return digits;
+        if (digits.startsWith('0120')) {
+          return digits.length <= 4 ? digits : digits.slice(0, 4) + '-' + digits.slice(4, 7) + (digits.length > 7 ? '-' + digits.slice(7, 10) : '');
+        }
+        if (digits.startsWith('0') && digits.length >= 4) {
+          if (digits.length <= 4) return digits.slice(0, 3) + '-' + digits.slice(3);
+          if (digits.length <= 8) return digits.slice(0, 3) + '-' + digits.slice(3, 7) + '-' + digits.slice(7);
+          return digits.slice(0, 3) + '-' + digits.slice(3, 7) + '-' + digits.slice(7, 11);
+        }
+        return digits;
+      }
+
+      function getReservationCountByDate() {
+        const countByDate = {};
+        reservations.forEach(function (r) {
+          countByDate[r.date] = (countByDate[r.date] || 0) + 1;
+        });
+        return countByDate;
+      }
+
+      function formatDateKey(y, m, d) {
+        return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      }
+
+      function renderCalendar() {
+        const countByDate = getReservationCountByDate();
+        const first = new Date(currentYear, currentMonth, 1);
+        const last = new Date(currentYear, currentMonth + 1, 0);
+        const startPad = first.getDay();
+        const daysInMonth = last.getDate();
+        const prevMonth = new Date(currentYear, currentMonth, 0);
+        const prevDays = prevMonth.getDate();
+
+        calendarTitle.textContent = currentYear + '年' + (currentMonth + 1) + '月';
+
+        // 曜日ヘッダーは既にHTMLにあるので、その後のセルだけ削除して再生成
+        const existing = calendarGrid.querySelectorAll('.calendar-day');
+        existing.forEach(function (el) { el.remove(); });
+
+        // 前月の日付で埋める
+        for (let i = startPad - 1; i >= 0; i--) {
+          const d = prevDays - i;
+          const key = formatDateKey(prevMonth.getFullYear(), prevMonth.getMonth(), d);
+          const cell = createDayCell(prevMonth.getFullYear(), prevMonth.getMonth(), d, true, key, countByDate);
+          calendarGrid.appendChild(cell);
+        }
+        // 今月
+        for (let d = 1; d <= daysInMonth; d++) {
+          const key = formatDateKey(currentYear, currentMonth, d);
+          const cell = createDayCell(currentYear, currentMonth, d, false, key, countByDate);
+          calendarGrid.appendChild(cell);
+        }
+        // 次月で埋める
+        const total = startPad + daysInMonth;
+        const rest = total % 7 === 0 ? 0 : 7 - (total % 7);
+        const nextMonth = new Date(currentYear, currentMonth + 1, 1);
+        for (let d = 1; d <= rest; d++) {
+          const key = formatDateKey(nextMonth.getFullYear(), nextMonth.getMonth(), d);
+          const cell = createDayCell(nextMonth.getFullYear(), nextMonth.getMonth(), d, true, key, countByDate);
+          calendarGrid.appendChild(cell);
+        }
+      }
+
+      function createDayCell(y, m, d, otherMonth, dateKey, countByDate) {
+        const cell = document.createElement('div');
+        cell.className = 'calendar-day';
+        const count = countByDate[dateKey] || 0;
+        if (count > 0) cell.classList.add('has-reservation');
+        if (otherMonth) cell.classList.add('other-month');
+        cell.dataset.date = dateKey;
+        const dayNum = document.createElement('span');
+        dayNum.className = 'day-num';
+        dayNum.textContent = d;
+        cell.appendChild(dayNum);
+        if (count > 0) {
+          const countEl = document.createElement('span');
+          countEl.className = 'reservation-count';
+          countEl.textContent = count + '件';
+          cell.appendChild(countEl);
+        }
+        const today = new Date();
+        if (today.getFullYear() === y && today.getMonth() === m && today.getDate() === d) {
+          cell.classList.add('today');
+        }
+        cell.addEventListener('click', function () {
+          selectDate(dateKey);
+        });
+        return cell;
+      }
+
+      function selectDate(dateKey) {
+        selectedDate = dateKey;
+        document.querySelectorAll('.calendar-day.selected').forEach(function (el) { el.classList.remove('selected'); });
+        const cell = calendarGrid.querySelector('.calendar-day[data-date="' + dateKey + '"]');
+        if (cell) cell.classList.add('selected');
+        renderTimetable(dateKey);
+      }
+
+      function renderTimetable(dateKey) {
+        const [y, m, d] = dateKey.split('-').map(Number);
+        const dateStr = y + '年' + m + '月' + d + '日（' + weekdays[new Date(y, m - 1, d).getDay()] + '）';
+        timetableDate.textContent = dateStr;
+        timetablePanelHeader.textContent = m + '月' + d + '日の予約';
+
+        const dayReservations = reservations.filter(function (r) { return r.date === dateKey; });
+        const byTime = {};
+        dayReservations.forEach(function (r) {
+          byTime[r.time] = r;
+        });
+
+        const slots = [];
+        for (let h = 9; h <= 17; h++) {
+          slots.push(String(h).padStart(2, '0') + ':00');
+          if (h < 17) slots.push(String(h).padStart(2, '0') + ':30');
+        }
+
+        let html = '';
+        slots.forEach(function (time) {
+          const r = byTime[time];
+          const timeLabel = time;
+          if (r) {
+            html += '<div class="timetable-row">';
+            html += '<div class="timetable-time">' + timeLabel + '</div>';
+            html += '<div class="timetable-slot busy">';
+            html += '<div class="slot-name">' + escapeHtml(r.name) + '様</div>';
+            html += '<div class="slot-meta">' + escapeHtml(r.tel) + '</div>';
+            if (r.summary) html += '<div class="slot-summary">' + escapeHtml(r.summary) + '</div>';
+            html += '<span class="badge ' + r.statusClass + '">' + escapeHtml(r.status) + '</span>';
+            html += '</div></div>';
+          } else {
+            html += '<div class="timetable-row">';
+            html += '<div class="timetable-time">' + timeLabel + '</div>';
+            html += '<div class="timetable-slot free">空き</div></div>';
+          }
+        });
+
+        timetableList.innerHTML = html;
+        timetableEmpty.style.display = 'none';
+        timetableContent.style.display = 'block';
+      }
+
+      function escapeHtml(s) {
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+      }
+
+      btnPrev.addEventListener('click', function () {
+        currentMonth--;
+        if (currentMonth < 0) { currentYear--; currentMonth = 11; }
+        renderCalendar();
+        if (selectedDate) {
+          const cell = calendarGrid.querySelector('.calendar-day[data-date="' + selectedDate + '"]');
+          if (cell) cell.classList.add('selected');
+        }
+      });
+
+      btnNext.addEventListener('click', function () {
+        currentMonth++;
+        if (currentMonth > 11) { currentYear++; currentMonth = 0; }
+        renderCalendar();
+        if (selectedDate) {
+          const cell = calendarGrid.querySelector('.calendar-day[data-date="' + selectedDate + '"]');
+          if (cell) cell.classList.add('selected');
+        }
+      });
+
+      btnToday.addEventListener('click', function () {
+        const t = new Date();
+        currentYear = t.getFullYear();
+        currentMonth = t.getMonth();
+        renderCalendar();
+      });
+
+      function openAddModal() {
+        addReservationModal.classList.remove('hidden');
+        addReservationModal.setAttribute('aria-hidden', 'false');
+        const d = new Date();
+        document.getElementById('addDate').value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        document.getElementById('addName').focus();
+      }
+
+      function closeAddModal() {
+        addReservationModal.classList.add('hidden');
+        addReservationModal.setAttribute('aria-hidden', 'true');
+      }
+
+      btnAddReservation.addEventListener('click', openAddModal);
+      btnCloseModal.addEventListener('click', closeAddModal);
+      addReservationModal.addEventListener('click', function (e) {
+        if (e.target === addReservationModal) closeAddModal();
+      });
+
+      addReservationForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const name = (document.getElementById('addName').value || '').trim();
+        const tel = (document.getElementById('addTel').value || '').trim();
+        const dateVal = document.getElementById('addDate').value;
+        const timeVal = document.getElementById('addTime').value || '10:00';
+        const summary = (document.getElementById('addSummary').value || '').trim();
+        const status = document.getElementById('addStatus').value || '確定';
+        if (!name || !tel || !dateVal) return;
+        const statusClass = status === '確認中' ? 'badge-確認中' : 'badge-確定';
+        reservations.push({
+          name: name,
+          tel: tel,
+          date: dateVal,
+          time: timeVal,
+          summary: summary || '—',
+          status: status,
+          statusClass: statusClass
+        });
+        saveReservations();
+        closeAddModal();
+        addReservationForm.reset();
+        renderCalendar();
+        renderMobileList();
+        if (selectedDate === dateVal) renderTimetable(selectedDate);
+      });
+
+      if (btnAddReservationMobile) btnAddReservationMobile.addEventListener('click', openAddModal);
+
+      renderCalendar();
+      renderMobileList();
+    })();
+  </script>
+</body>
+</html>
