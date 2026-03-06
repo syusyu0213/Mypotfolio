@@ -113,6 +113,65 @@
       margin-top: 4px;
     }
     .toggle-status.on { color: #27ae60; font-weight: 600; }
+    /* LINE用トグル（アクセント #06C755） */
+    .toggle-switch-line.on { background: #06C755; }
+    .toggle-status.line-on { color: #06C755; font-weight: 600; }
+    .panel-header.line-accent { border-left: 4px solid #06C755; }
+    .line-qr-box {
+      margin-top: 16px;
+      padding: 16px;
+      border: 1px dashed #06C755;
+      border-radius: 8px;
+      background: #f5fff8;
+      text-align: center;
+    }
+    .line-qr-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #06C755;
+      margin-bottom: 8px;
+    }
+    .line-qr-code-placeholder {
+      height: 120px;
+      border-radius: 6px;
+      border: 2px dashed rgba(6, 199, 85, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      color: #7f8c8d;
+      background: #ffffff;
+    }
+    .line-linked-row {
+      margin-top: 8px;
+      margin-bottom: 4px;
+    }
+    .line-linked-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #e5f9eb;
+      color: #06C755;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .btn-line-test {
+      margin-top: 12px;
+      padding: 10px 18px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 6px;
+      border: 1px solid #06C755;
+      background: #ffffff;
+      color: #06C755;
+      cursor: pointer;
+      min-height: 44px;
+    }
+    .btn-line-test:hover {
+      background: #e5f9eb;
+    }
 
     /* スケジュール */
     .schedule-list { margin-bottom: 16px; }
@@ -146,6 +205,100 @@
       min-height: 44px;
     }
     .schedule-item .btn-remove:hover { background: #c0392b; }
+    .schedule-item .schedule-days {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .schedule-item .schedule-days label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #2c3e50;
+      cursor: pointer;
+      margin: 0;
+    }
+    .schedule-item .schedule-days input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    .schedule-item .schedule-days-row {
+      width: 100%;
+      margin-top: 8px;
+      padding-bottom: 8px;
+      margin-bottom: 4px;
+      border-bottom: 1px solid #eee;
+    }
+    .schedule-item .schedule-days-row .label {
+      font-size: 13px;
+      color: #7f8c8d;
+      margin-bottom: 4px;
+    }
+    /* 稼働パターン選択（24時間 vs 時間指定） */
+    .schedule-mode-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 520px) {
+      .schedule-mode-selector { grid-template-columns: 1fr; }
+    }
+    .schedule-mode-option {
+      display: block;
+      position: relative;
+      padding: 16px;
+      border: 2px solid #bdc3c7;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .schedule-mode-option:hover {
+      border-color: #3498db;
+      background: #f8fbfd;
+    }
+    .schedule-mode-option input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .schedule-mode-option input:checked + .schedule-mode-label,
+    .schedule-mode-option input:focus-visible + .schedule-mode-label {
+      color: #2980b9;
+    }
+    .schedule-mode-option:has(input:checked) {
+      border-color: #3498db;
+      background: #ebf5fb;
+      box-shadow: 0 0 0 1px #3498db;
+    }
+    .schedule-mode-label {
+      display: block;
+      font-size: 17px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 4px;
+    }
+    .schedule-mode-desc {
+      display: block;
+      font-size: 13px;
+      color: #7f8c8d;
+      line-height: 1.4;
+    }
+    .schedule-time-slots-wrap {
+      margin-top: 8px;
+    }
+    .schedule-time-slots-wrap.hidden {
+      display: none;
+    }
+    .schedule-sub-desc {
+      font-size: 14px;
+      color: #7f8c8d;
+      margin-bottom: 12px;
+    }
     .btn-add {
       padding: 12px 20px;
       font-size: 16px;
@@ -183,6 +336,16 @@
       border: 1px solid #bdc3c7;
       border-radius: 6px;
       min-height: 44px;
+    }
+    .form-group select {
+      width: 100%;
+      max-width: 200px;
+      padding: 10px 12px;
+      font-size: 16px;
+      border: 1px solid #bdc3c7;
+      border-radius: 6px;
+      min-height: 44px;
+      background: #fff;
     }
 
     /* 保存 */
@@ -225,6 +388,32 @@
       font-weight: 600;
     }
     .save-message.hidden { display: none; }
+    .line-settings-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(10px);
+      background: #06C755;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 1200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .line-settings-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+    .line-settings-toast.hide {
+      opacity: 0;
+      transform: translateX(-50%) translateY(10px);
+    }
   </style>
 </head>
 <body>
@@ -232,7 +421,7 @@
     <div class="nav-inner">
       <span class="nav-title">AI電話予約システム</span>
       <a href="ai-demo.html" class="nav-item">ダッシュボード</a>
-      <a href="reservation-calendar.html" class="nav-item">予約一覧</a>
+      <a href="reservation-calendar.html" class="nav-item">予約表</a>
       <a href="ai-settings.html" class="nav-item active">設定</a>
     </div>
   </nav>
@@ -250,6 +439,52 @@
             <div class="toggle-status" id="toggleStatus">オフ（手動・有人対応時はオフにしてください）</div>
           </div>
           <div class="toggle-switch" id="toggleSwitch" role="button" tabindex="0" aria-pressed="false"></div>
+        </div>
+        <div class="form-group">
+          <label for="maxCapacity">同時予約の受付上限（キャパシティ）</label>
+          <select id="maxCapacity">
+            <option value="1">1名</option>
+            <option value="2">2名</option>
+            <option value="3">3名</option>
+            <option value="4">4名</option>
+            <option value="5">5名</option>
+          </select>
+          <p class="schedule-note">
+            同じ時間帯に受け付ける最大人数です。先生の人数や診察ユニットの数に合わせて設定してください。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <header class="panel-header">AI稼働スケジュール</header>
+      <div class="panel-body">
+        <p class="panel-desc">
+          AIをいつ動かすかを選べます。「24時間」なら終日対応、「時間帯を指定」なら営業時間外だけなど細かく設定できます。
+        </p>
+        <div class="schedule-mode-selector" role="group" aria-label="稼働パターン">
+          <label class="schedule-mode-option">
+            <input type="radio" name="scheduleMode" id="scheduleModeAllDay" value="allDay">
+            <span class="schedule-mode-label">24時間</span>
+            <span class="schedule-mode-desc">毎日24時間、AIが自動で予約を受け付けます。</span>
+          </label>
+          <label class="schedule-mode-option">
+            <input type="radio" name="scheduleMode" id="scheduleModeTimeSlots" value="timeSlots">
+            <span class="schedule-mode-label">時間帯を指定して動かす</span>
+            <span class="schedule-mode-desc">営業時間外など、指定した時間・曜日だけAIが対応します。</span>
+          </label>
+        </div>
+        <div class="schedule-time-slots-wrap" id="scheduleTimeSlotsWrap">
+          <p class="schedule-sub-desc">次の時間帯は、電話がかかってきたときにAIが予約を受け付けます。終了が開始より前の場合は翌日まで。曜日未選択は全曜日です。</p>
+          <div class="schedule-list" id="scheduleList"></div>
+          <button type="button" class="btn-add" id="btnAddSchedule">＋ スケジュールを追加</button>
+          <p class="schedule-note">例：18:00 ～ 09:00 と設定すると、18:00から翌朝9:00までAIが稼働します。</p>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-save" id="btnSave">設定を保存</button>
+          <button type="button" class="btn-cancel" id="btnCancel">キャンセル</button>
+          <span class="save-message hidden" id="saveMessage">保存しました</span>
         </div>
       </div>
     </section>
@@ -275,33 +510,44 @@
     </section>
 
     <section class="panel">
-      <header class="panel-header">AI稼働スケジュール</header>
+      <header class="panel-header line-accent">LINE通知連携</header>
       <div class="panel-body">
         <p class="panel-desc">
-          次の時間帯は、電話がかかってきたときに自動でAIが予約を受け付けます。営業時間外（例：18:00～翌9:00）に設定することをおすすめします。終了時刻が開始時刻より前の場合は「翌日まで」として扱います。
+          予約が入ったときに、LINEで通知を受け取れます。デモでは実際の送信は行いません。
         </p>
-        <div class="schedule-list" id="scheduleList"></div>
-        <button type="button" class="btn-add" id="btnAddSchedule">＋ スケジュールを追加</button>
-        <p class="schedule-note">例：18:00 ～ 09:00 と設定すると、18:00から翌朝9:00までAIが稼働します。</p>
-
-        <div class="form-actions">
-          <button type="button" class="btn-save" id="btnSave">設定を保存</button>
-          <button type="button" class="btn-cancel" id="btnCancel">キャンセル</button>
-          <span class="save-message hidden" id="saveMessage">保存しました</span>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">予約が入ったときにLINEで通知する</div>
+            <div class="toggle-status" id="lineNotifyStatus">オフ</div>
+          </div>
+          <div class="toggle-switch toggle-switch-line" id="lineNotifySwitch" role="button" tabindex="0" aria-pressed="false"></div>
         </div>
+        <div class="line-linked-row">
+          <span id="lineLinkedBadge" class="line-linked-badge hidden">● 連携済み</span>
+        </div>
+        <div class="line-qr-box">
+          <div class="line-qr-title">連携用QRコード</div>
+          <div class="line-qr-code-placeholder">ここにLINE連携用のQRコードが表示されます（ダミー表示）</div>
+        </div>
+        <button type="button" class="btn-line-test" id="btnLineTest">テスト通知を送る</button>
       </div>
     </section>
   </main>
+
+  <div id="lineSettingsToast" class="line-settings-toast hide" aria-live="polite"></div>
 
   <script>
     (function () {
       const STORAGE_KEY = 'ai-reservation-settings';
       const defaultSettings = {
-        aiEnabled: false,
-        emailNotify: false,
+        aiEnabled: true,
+        emailNotify: true,
         notifyEmail: '',
+        lineNotify: false,
+        maxCapacity: 1,
+        scheduleMode: 'timeSlots',
         schedules: [
-          { start: '18:00', end: '09:00' }
+          { start: '18:00', end: '09:00', days: [0, 1, 2, 3, 4, 5, 6] }
         ]
       };
 
@@ -315,6 +561,15 @@
       const emailNotifySwitch = document.getElementById('emailNotifySwitch');
       const emailNotifyStatus = document.getElementById('emailNotifyStatus');
       const notifyEmailInput = document.getElementById('notifyEmail');
+      const lineNotifySwitch = document.getElementById('lineNotifySwitch');
+      const lineNotifyStatus = document.getElementById('lineNotifyStatus');
+      const lineLinkedBadge = document.getElementById('lineLinkedBadge');
+      const btnLineTest = document.getElementById('btnLineTest');
+      const lineSettingsToast = document.getElementById('lineSettingsToast');
+      const maxCapacitySelect = document.getElementById('maxCapacity');
+      const scheduleModeAllDay = document.getElementById('scheduleModeAllDay');
+      const scheduleModeTimeSlots = document.getElementById('scheduleModeTimeSlots');
+      const scheduleTimeSlotsWrap = document.getElementById('scheduleTimeSlotsWrap');
 
       function loadSettings() {
         try {
@@ -325,9 +580,13 @@
               aiEnabled: !!data.aiEnabled,
               emailNotify: !!data.emailNotify,
               notifyEmail: (data.notifyEmail || '').trim(),
+              lineNotify: !!data.lineNotify,
+              maxCapacity: Math.min(5, Math.max(1, parseInt(data.maxCapacity, 10) || 1)),
+              scheduleMode: data.scheduleMode === 'allDay' ? 'allDay' : 'timeSlots',
               schedules: Array.isArray(data.schedules) && data.schedules.length > 0
                 ? data.schedules.map(function (s) {
-                    return { start: s.start || '18:00', end: s.end || '09:00' };
+                    var days = Array.isArray(s.days) ? s.days.slice() : [0, 1, 2, 3, 4, 5, 6];
+                    return { start: s.start || '18:00', end: s.end || '09:00', days: days };
                   })
                 : defaultSettings.schedules
             };
@@ -357,6 +616,39 @@
         notifyEmailInput.value = current.notifyEmail || '';
       }
 
+      function renderMaxCapacity() {
+        if (!maxCapacitySelect) return;
+        const v = current.maxCapacity || 1;
+        maxCapacitySelect.value = String(v);
+      }
+
+      function renderLineNotify() {
+        if (!lineNotifySwitch || !lineNotifyStatus) return;
+        if (current.lineNotify) {
+          lineNotifySwitch.classList.add('on');
+          lineNotifySwitch.setAttribute('aria-pressed', 'true');
+          lineNotifyStatus.textContent = 'オン（予約入り次第、LINEで通知します）';
+          lineNotifyStatus.classList.add('line-on');
+        } else {
+          lineNotifySwitch.classList.remove('on');
+          lineNotifySwitch.setAttribute('aria-pressed', 'false');
+          lineNotifyStatus.textContent = 'オフ';
+          lineNotifyStatus.classList.remove('line-on');
+        }
+        if (lineLinkedBadge) {
+          if (current.lineNotify) lineLinkedBadge.classList.remove('hidden');
+          else lineLinkedBadge.classList.add('hidden');
+        }
+      }
+
+      function renderScheduleMode() {
+        if (!scheduleModeAllDay || !scheduleModeTimeSlots || !scheduleTimeSlotsWrap) return;
+        const isAllDay = current.scheduleMode === 'allDay';
+        scheduleModeAllDay.checked = isAllDay;
+        scheduleModeTimeSlots.checked = !isAllDay;
+        scheduleTimeSlotsWrap.classList.toggle('hidden', isAllDay);
+      }
+
       function renderToggle() {
         if (current.aiEnabled) {
           toggleSwitch.classList.add('on');
@@ -371,16 +663,34 @@
         }
       }
 
+      const WEEKDAYS = [
+        { value: 0, label: '日' },
+        { value: 1, label: '月' },
+        { value: 2, label: '火' },
+        { value: 3, label: '水' },
+        { value: 4, label: '木' },
+        { value: 5, label: '金' },
+        { value: 6, label: '土' }
+      ];
+
       function renderSchedules() {
         scheduleList.innerHTML = '';
         current.schedules.forEach(function (s, i) {
+          const days = Array.isArray(s.days) ? s.days : [0, 1, 2, 3, 4, 5, 6];
           const item = document.createElement('div');
           item.className = 'schedule-item';
+          let daysHtml = '<div class="schedule-days-row"><div class="label">稼働曜日</div><div class="schedule-days">';
+          WEEKDAYS.forEach(function (w) {
+            const checked = days.indexOf(w.value) !== -1 ? ' checked' : '';
+            daysHtml += '<label><input type="checkbox" class="schedule-day-cb" data-index="' + i + '" value="' + w.value + '"' + checked + '><span>' + w.label + '</span></label>';
+          });
+          daysHtml += '</div></div>';
           item.innerHTML =
             '<input type="time" class="time-from" value="' + (s.start || '18:00') + '" data-index="' + i + '" data-type="start">' +
             '<span class="time-sep">～</span>' +
             '<input type="time" class="time-to" value="' + (s.end || '09:00') + '" data-index="' + i + '" data-type="end">' +
-            '<button type="button" class="btn-remove" data-index="' + i + '">削除</button>';
+            '<button type="button" class="btn-remove" data-index="' + i + '">削除</button>' +
+            daysHtml;
           scheduleList.appendChild(item);
         });
 
@@ -389,6 +699,18 @@
             const i = parseInt(this.dataset.index, 10);
             const type = this.dataset.type;
             if (current.schedules[i]) current.schedules[i][type] = this.value;
+          });
+        });
+        scheduleList.querySelectorAll('.schedule-day-cb').forEach(function (cb) {
+          cb.addEventListener('change', function () {
+            const i = parseInt(this.dataset.index, 10);
+            const v = parseInt(this.value, 10);
+            if (!current.schedules[i]) return;
+            if (!Array.isArray(current.schedules[i].days)) current.schedules[i].days = [0, 1, 2, 3, 4, 5, 6];
+            const idx = current.schedules[i].days.indexOf(v);
+            if (this.checked && idx === -1) current.schedules[i].days.push(v);
+            if (!this.checked && idx !== -1) current.schedules[i].days.splice(idx, 1);
+            current.schedules[i].days.sort(function (a, b) { return a - b; });
           });
         });
         scheduleList.querySelectorAll('.btn-remove').forEach(function (btn) {
@@ -404,15 +726,28 @@
       function collectForm() {
         current.emailNotify = emailNotifySwitch.classList.contains('on');
         current.notifyEmail = (notifyEmailInput.value || '').trim();
-        const fromInputs = scheduleList.querySelectorAll('.time-from');
-        const toInputs = scheduleList.querySelectorAll('.time-to');
-        current.schedules = [];
-        fromInputs.forEach(function (input, i) {
-          current.schedules.push({
-            start: input.value || '18:00',
-            end: toInputs[i] ? toInputs[i].value : '09:00'
+        current.lineNotify = lineNotifySwitch && lineNotifySwitch.classList.contains('on');
+        if (maxCapacitySelect) {
+          const v = parseInt(maxCapacitySelect.value, 10);
+          current.maxCapacity = Math.min(5, Math.max(1, isNaN(v) ? 1 : v));
+        }
+        current.scheduleMode = scheduleModeAllDay && scheduleModeAllDay.checked ? 'allDay' : 'timeSlots';
+        if (current.scheduleMode === 'timeSlots') {
+          current.schedules = [];
+          scheduleList.querySelectorAll('.schedule-item').forEach(function (row) {
+          const fromInput = row.querySelector('.time-from');
+          const toInput = row.querySelector('.time-to');
+          const days = [];
+          row.querySelectorAll('.schedule-day-cb:checked').forEach(function (cb) {
+            days.push(parseInt(cb.value, 10));
           });
-        });
+          current.schedules.push({
+            start: fromInput && fromInput.value ? fromInput.value : '18:00',
+            end: toInput && toInput.value ? toInput.value : '09:00',
+            days: days.length > 0 ? days.sort(function (a, b) { return a - b; }) : [0, 1, 2, 3, 4, 5, 6]
+          });
+          });
+        }
       }
 
       toggleSwitch.addEventListener('click', function () {
@@ -442,8 +777,28 @@
         current.notifyEmail = this.value.trim();
       });
 
+      if (lineNotifySwitch) {
+        lineNotifySwitch.addEventListener('click', function () {
+          current.lineNotify = !current.lineNotify;
+          renderLineNotify();
+        });
+        lineNotifySwitch.addEventListener('keydown', function (e) {
+          if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            current.lineNotify = !current.lineNotify;
+            renderLineNotify();
+          }
+        });
+      }
+
+      if (btnLineTest) {
+        btnLineTest.addEventListener('click', function () {
+          showLineTestToast();
+        });
+      }
+
       btnAddSchedule.addEventListener('click', function () {
-        current.schedules.push({ start: '18:00', end: '09:00' });
+        current.schedules.push({ start: '18:00', end: '09:00', days: [0, 1, 2, 3, 4, 5, 6] });
         renderSchedules();
       });
 
@@ -455,16 +810,51 @@
         setTimeout(function () { saveMessage.classList.add('hidden'); }, 3000);
       });
 
+      function showLineTestToast() {
+        if (!lineSettingsToast) return;
+        lineSettingsToast.textContent = '[LINE] 接続テストに成功しました。予約入り次第通知されます。';
+        lineSettingsToast.classList.remove('hide');
+        lineSettingsToast.classList.add('show');
+        clearTimeout(lineSettingsToast._hideId);
+        lineSettingsToast._hideId = setTimeout(function () {
+          lineSettingsToast.classList.remove('show');
+          lineSettingsToast.classList.add('hide');
+        }, 4000);
+      }
+
+      // 他ページへ遷移する前にフォーム内容を保存（「設定を保存」を押さずに離脱しても反映される）
+      window.addEventListener('beforeunload', function () {
+        collectForm();
+        saveSettings(current);
+      });
+
+      if (scheduleModeAllDay) {
+        scheduleModeAllDay.addEventListener('change', function () {
+          if (this.checked) { current.scheduleMode = 'allDay'; renderScheduleMode(); }
+        });
+      }
+      if (scheduleModeTimeSlots) {
+        scheduleModeTimeSlots.addEventListener('change', function () {
+          if (this.checked) { current.scheduleMode = 'timeSlots'; renderScheduleMode(); }
+        });
+      }
+
       btnCancel.addEventListener('click', function () {
         current = loadSettings();
         renderToggle();
         renderEmailNotify();
+        renderLineNotify();
+        renderMaxCapacity();
+        renderScheduleMode();
         renderSchedules();
         saveMessage.classList.add('hidden');
       });
 
       renderToggle();
       renderEmailNotify();
+      renderLineNotify();
+      renderMaxCapacity();
+      renderScheduleMode();
       renderSchedules();
     })();
   </script>
